@@ -2,10 +2,9 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AppBar, Typography } from '@material-ui/core';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import HomeAppBar from '../components/HomeAppBar'
 import green from '@material-ui/core/colors/green';
 
-export default function Home() {
+export default function HomeAppBar() {
   const theme = createMuiTheme({
     overrides: {
       MuiAppBar: {
@@ -24,26 +23,21 @@ export default function Home() {
     },
   });
 
-
-  function testConnectionToLocalServer() {
-    return fetch("https://sddmajordev:5000/test")
-    .then(response => response.json())
-    .then(data => {
-      console.log('Success:', data);
-    })
-    .catch((err) => {
-        console.log(err);
-    });
-  }
-
-  useEffect(() => {
-    testConnectionToLocalServer();
-  }, []);
-
   return (
     <div className="App">
       <header className="App-header">
-        <HomeAppBar/>
+        <ThemeProvider theme={theme}>
+          <AppBar color='primary' theme={theme}>
+            <div style={{display: "inline-block"}}>
+              <h3 style={{marginRight: "100px", display: "inline-block", textDecoration: "none"}}>
+                <Link to="/login" style={{textDecoration: "none"}}>Sign In</Link>
+              </h3> 
+              <h3 style={{marginRight: "100px", display: "inline-block"}}>
+                <Link to="/register">Register</Link>
+              </h3> 
+            </div>
+          </AppBar>
+        </ThemeProvider>
       </header>
     </div>
   );
