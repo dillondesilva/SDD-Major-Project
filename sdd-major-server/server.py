@@ -3,7 +3,10 @@ from pymongo import MongoClient
 from flask_api import FlaskAPI, status, exceptions
 from argparse import ArgumentParser
 
+from core.api.userbase import userbase_api
+
 app = FlaskAPI(__name__)
+app.register_blueprint(userbase_api, url_prefix="/api/userbase")
 
 # def main():
 #     client = MongoClient("mongodb://localhost:27017/users?retryWrites=true&w=majority")

@@ -60,9 +60,15 @@ export default class Register extends React.Component {
   // useEffect(() => {
   //   testConnectionToLocalServer();
   // }, []);
-
   registerUser() {
-    console.log(this.state);
+    fetch('https://127.0.0.1:5000/api/userbase/create_user', {
+    method: 'post',
+    body: JSON.stringify(this.state)
+    }).then(function(response) {
+      return response.json();
+    }).then(function(data) {
+      console.log(data);
+  });
   }
 
   render() {
