@@ -24,22 +24,6 @@ export default function Home() {
     },
   });
 
-
-  function testConnectionToLocalServer() {
-    return fetch("https://sddmajordev:5000/test")
-    .then(response => response.json())
-    .then(data => {
-      console.log('Success:', data);
-    })
-    .catch((err) => {
-        console.log(err);
-    });
-  }
-
-  useEffect(() => {
-    testConnectionToLocalServer();
-  }, []);
-
   return (
     <div className="App">
       <header className="App-header">
