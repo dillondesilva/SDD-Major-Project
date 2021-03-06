@@ -6,9 +6,11 @@ import {
   Route,
   Link
 } from "react-router-dom";
-import Home from './pages/Home'
-import Login from './pages/Login'
+
+import Home from './pages/Home';
+import Login from './pages/Login';
 import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -21,6 +23,9 @@ function App() {
       </Route>
       <Route path="/register">
         <Register/>
+      </Route>
+      <Route path="/dashboard">
+        <Dashboard/>
       </Route>
     </Router>
   );

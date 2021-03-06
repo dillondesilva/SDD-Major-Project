@@ -1,13 +1,15 @@
-class User:
-    def __init__(self, email, username, pwd):
-        self.email = email
-        self.pwd = pwd
-        self.username = username
+from time import time
+import jwt
 
-    @property
-    def to_dict(self):
-        return {
-            "email": self.email,
-            "pwd": self.pwd,
-            "username": self.username
+class User:
+    # Generates a unique token for authentication
+    def gen_token(uid):
+        # Payload for our JSON-Web Token
+        token_payload = {
+            "id": uid,
+            "iat": time(),
+            "type": "access/student",
         }
+
+        encoded_token = jwt.encode(token_payload, 'secret', algorithm='HS256')
+        return encoded_token

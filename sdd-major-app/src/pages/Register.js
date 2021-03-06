@@ -79,22 +79,25 @@ export default class Register extends React.Component {
       <div>
         <div className="App">
           <header className="App-header">
-            <ThemeProvider theme={theme}>
-                <TextField value={this.state.emailValue} label="Email" color="primary" variant="outlined" 
-                onChange={(e) => this.setState({emailValue: e.target.value})}/>
-                <br></br>
-                <TextField label="Username" color="primary" variant="outlined" 
-                onChange={(e) => this.setState({usernameValue: e.target.value})}/>
-                <br></br>
-                <TextField label="Password" color="primary" variant="outlined"
-                onChange={(e) => this.setState({pwdValue: e.target.value})}/>
-                <br></br>
-                <TextField label="Confirm Password" color="primary" variant="outlined"
-                onChange={(e) => this.setState({pwdConfirmValue: e.target.value})}/>
-                <br></br>
-                <Button onClick={() => this.registerUser()}>Go</Button>
-            </ThemeProvider>
+            <HomeAppBar></HomeAppBar>
           </header>
+          <div>
+            <ThemeProvider theme={theme}>
+                  <TextField value={this.state.emailValue} label="Email" color="primary" variant="outlined" 
+                  onChange={(e) => this.setState({emailValue: e.target.value})}/>
+                  <br></br>
+                  <TextField label="Username" color="primary" variant="outlined" 
+                  onChange={(e) => this.setState({usernameValue: e.target.value})}/>
+                  <br></br>
+                  <TextField label="Password" color="primary" variant="outlined"
+                  onChange={(e) => this.setState({pwdValue: e.target.value})}/>
+                  <br></br>
+                  <TextField label="Confirm Password" color="primary" variant="outlined"
+                  onChange={(e) => this.setState({pwdConfirmValue: e.target.value})}/>
+                  <br></br>
+                  <Button onClick={() => this.registerUser()}>Go</Button>
+              </ThemeProvider>  
+          </div>
         </div>
       </div>
     ); 
