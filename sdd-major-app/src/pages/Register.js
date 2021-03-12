@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { TextField, Button } from '@material-ui/core';
+import { TextField, Button, Radio, RadioGroup, FormControl, FormControlLabel, FormLabel } from '@material-ui/core';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import green from '@material-ui/core/colors/green';
 import HomeAppBar from '../components/HomeAppBar'
@@ -38,6 +38,7 @@ export default class Register extends React.Component {
       usernameValue: "",
       pwdValue: "",
       pwdConfirmValue: "",
+      accountType: ""
     };
 
     // Refs
@@ -94,6 +95,16 @@ export default class Register extends React.Component {
                   <br></br>
                   <TextField label="Confirm Password" color="primary" variant="outlined"
                   onChange={(e) => this.setState({pwdConfirmValue: e.target.value})}/>
+                  <br></br>
+                  <br></br>
+                  <FormControl component="fieldset">
+                    <FormLabel component="legend">I am a</FormLabel>
+                    <RadioGroup aria-label="gender" name="gender1" style={{display: "inline"}} value={this.state.accountType}
+                    onChange={(e) => this.setState({accountType: e.target.value})}>
+                      <FormControlLabel value="student" control={<Radio />} label="Student" />
+                      <FormControlLabel value="teacher" control={<Radio />} label="Teacher" />
+                    </RadioGroup>
+                  </FormControl>
                   <br></br>
                   <Button onClick={() => this.registerUser()}>Go</Button>
               </ThemeProvider>  

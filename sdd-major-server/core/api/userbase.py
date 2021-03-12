@@ -22,6 +22,7 @@ def create_user():
     username = request.json["usernameValue"]
     pwd = request.json ["pwdValue"]
     confirm_pwd = request.json["pwdConfirmValue"]
+    account_type = request.json["accountType"]
     uid = str(uuid4()) # Generate UUID
     salt = os.urandom(32) # New salt per user
 
@@ -33,6 +34,7 @@ def create_user():
             "email": email,
             "username": username,
             "pwd": hashed_pwd,
+            "account_type": account_type,
             "salt": salt
         })
 
@@ -69,5 +71,33 @@ def verify_user():
             uid = requested_user[0]["uid"]
             token = User.gen_token(uid)
             response = jsonify(access_token=token, uid=uid)
+    
+    return response
+
+# Verifies given user details exist in database
+@userbase_api.route("/get_user_by_uid", methods=["POST"])
+@cross_origin()
+def get_user_by_uid():
+    uid = request.json["uid"]
+
+    user_query = {
+        "uid": uid
+    }
+
+    requested_user = db.users.find(user_query)
+    users_found = requested_user.count()
+
+    response = ""
+    # No user was found with the given email
+    if users_found == 0:
+        response = jsonify(empty="invalid uid")
+        return response
+    else:
+        user = requested_user[0]
+        response = jsonify({
+            "email": user["email"],
+            "username": user["username"],
+            "accountType": user["account_type"]
+        })
     
     return response
