@@ -13,12 +13,14 @@ export default class Dashboard extends React.Component {
                 username: "",
                 email: ""
             },
+            existingWordlists: {},
             openCreateWordlist: false,
             wordlistName: "",
             wordlistDescription: ""
         }
 
         this.createWordlist = this.createWordlist.bind(this);
+        this.getWordlists = this.getWordlists.bind(this);
     }
 
     // Adding user details pre render
@@ -34,6 +36,26 @@ export default class Dashboard extends React.Component {
           .then(response => response.json())
           .then(data => {
               this.setState({userDetails: data})
+        })
+        this.getWordlists();
+    }
+
+    getWordlists() {
+        let uid = sessionStorage.getItem("uid");
+        console.log(uid)
+        fetch('http://sddmajordev:5000/api/wordlist/get_all_wordlists', {
+            method: 'post',
+            headers: {
+              'Content-Type':  'application/json',
+            }, 
+            body: JSON.stringify({"uid": uid})
+          })
+          .then(response => response.json())
+          .then(data => {
+              console.log(data)
+              this.setState({
+                  existingWordlists: data.wordlists
+              })
         })
     }
 
@@ -58,7 +80,7 @@ export default class Dashboard extends React.Component {
           })
           .then(response => response.json())
           .then(data => {
-              window.location = "/login"
+              window.location = `/edit/${wordlistCode}`
         }) 
     }
 
@@ -79,7 +101,7 @@ export default class Dashboard extends React.Component {
         } else {
             // Return Teacher Dashboard
             return (
-                <div>
+                <div style={{overflow: "hidden"}}>
                     <Tooltip title="Add Student" TransitionComponent={Zoom} arrow>
                         <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}}>
                             <AddIcon style={{color: "white"}}/>
@@ -91,7 +113,25 @@ export default class Dashboard extends React.Component {
                         </IconButton> 
                     </Tooltip>
                     <h1 style={{textAlign: "center"}}>Hello, {this.state.userDetails.username}</h1>
-                    <TextField label="Search Wordlist" variant="outlined"></TextField>
+                    <br></br>
+                    <div>
+                        <Paper style={{width: "950px", height: "100%", margin: "0", float: "right"}} elevation={3}>
+                            <div style={{margin: "3%"}}>
+                                <h1>Your Wordlists</h1>
+                                <TextField label="Search Wordlist" variant="outlined" size="small"></TextField>
+                                <Paper style={{width: "800px", minHeight: "100vh", marginTop: "1%"}} elevation={5}>
+                                {
+                                    Object.keys(this.state.existingWordlists).map((wordlistCode) => {
+                                        let wordlistData = this.state.existingWordlists[wordlistCode]
+                                        return (
+                                            <h1>{wordlistData.wordlist_name}</h1>
+                                        )
+                                    })
+                                }
+                                </Paper>
+                            </div>
+                        </Paper>
+                    </div>
                     <Dialog open={this.state.openCreateWordlist}>
                         <DialogTitle>New Wordlist</DialogTitle>
                         <div style={{marginLeft: "5%"}}>

@@ -24,23 +24,47 @@ def create_wordlist():
     uid = request.json["uid"]
 
     wordlist_data = {
-        wordlist_name: wordlist_name,
-        wordlist_des: wordlist_des,
+        "wordlist_name": wordlist_name,
+        "wordlist_des": wordlist_des
     }
-
-    db.wordlists.insert_one({
-        "uid": uid
-    })
 
     user_query = {
         "uid": uid
     }
 
     requested_user = db.wordlists.find(user_query)
-    existing_wordlists = requested_user[0]
-    existing_wordlists[wordlist_code] = wordlist_data
-    db.wordlists.update_one(user_query, {"$set": existing_wordlists})
+
+    if requested_user.count() == 0:
+        db.wordlists.insert_one({
+            "uid": uid,
+            "wordlists": {
+                wordlist_code: wordlist_data
+            }
+        })
+    else:
+        existing_wordlists = requested_user[0]
+        existing_wordlists["wordlists"][wordlist_code] = wordlist_data
+        db.wordlists.update_one(user_query, {"$set": existing_wordlists})
 
 
     return jsonify(message="hello")
+
+# Gets all the wordlists for a uid in Mongo
+@wordlist_api.route("/get_all_wordlists", methods=["POST"])
+@cross_origin()
+def get_all_wordlists():
+    uid = request.json["uid"]
+
+    user_query = {
+        "uid": uid
+    }
+
+    response = ""
+    requested_user = db.wordlists.find(user_query)
+    if requested_user.count() != 0:
+        existing_wordlists = requested_user[0]["wordlists"]
+        response = existing_wordlists
+
+    return jsonify(wordlists=response)
+
 

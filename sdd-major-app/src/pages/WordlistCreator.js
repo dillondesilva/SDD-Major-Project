@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
-import { Tooltip, IconButton, TextField, Dialog, DialogTitle, Zoom } from '@material-ui/core'
+import { Paper, Card, CardContent } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import CreateIcon from '@material-ui/icons/Create';
 import Carousel from 'react-material-ui-carousel'
-
+import { useParams } from 'react-router';
 
 export default class WordlistCreator extends React.Component {
     constructor(props) {
@@ -14,13 +14,17 @@ export default class WordlistCreator extends React.Component {
                 username: "",
                 email: ""
             },
-            openCreateWordlist: false
+            wordlistCode: ""
         }
     }
 
     // Adding user details pre render
     componentWillMount() {
         let uid = sessionStorage.getItem("uid");
+        // this.setState({
+        //     wordlistCode: wordlistCode
+        // })
+
         fetch('http://sddmajordev:5000/api/userbase/get_user_by_uid', {
             method: 'post',
             headers: {
@@ -52,19 +56,12 @@ export default class WordlistCreator extends React.Component {
             // Return Teacher Dashboard
             return (
                 <div>
-                    <Tooltip title="Add Student" TransitionComponent={Zoom} arrow>
-                        <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}}>
-                            <AddIcon style={{color: "white"}}/>
-                        </IconButton> 
-                    </Tooltip>
-                    <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}}> onClick={() => { this.setState({openCreateWordlist: true})}} >
-                        <CreateIcon style={{color: "white"}}/>
-                    </IconButton> 
-                    <h1 style={{textAlign: "center"}}>Hello, {this.state.userDetails.username}</h1>
-                    <TextField label="Search Wordlist" variant="outlined"></TextField>
-                    <Dialog open={this.state.openCreateWordlist}>
-                        <DialogTitle>Hey</DialogTitle>
-                    </Dialog>
+                    <h1 style={{textAlign: "left",}}>10 IST</h1>
+                    <div style={{display: "inline-block"}}>
+                        <Paper elevation={8} style={{width: "400px", height: "500px", borderRadius: "10px"}}>
+                            <h2 style={{padding: "5%"}}>Your Words</h2>
+                        </Paper>
+                    </div>
                 </div>
             )
         }
