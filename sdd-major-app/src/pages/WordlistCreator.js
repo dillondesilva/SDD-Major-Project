@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Paper, Button, Card, CardContent, IconButton } from '@material-ui/core'
+import { Paper, Button, Card, CardContent, IconButton, TextField, Dialog, DialogTitle, Input } from '@material-ui/core'
 import image from '../public/theboard.png'
 import AddIcon from '@material-ui/icons/Add';
 import CreateIcon from '@material-ui/icons/Create';
@@ -15,7 +15,8 @@ export default class WordlistCreator extends React.Component {
                 username: "",
                 email: ""
             },
-            wordlistCode: ""
+            wordlistCode: "",
+            openWord: false
         }
     }
 
@@ -25,6 +26,11 @@ export default class WordlistCreator extends React.Component {
         // this.setState({
         //     wordlistCode: wordlistCode
         // })
+
+        let wordlistCode = this.props.match.params.id;
+        this.setState({
+            wordlistCode: wordlistCode
+        })
 
         fetch('http://sddmajordev:5000/api/userbase/get_user_by_uid', {
             method: 'post',
@@ -67,7 +73,7 @@ export default class WordlistCreator extends React.Component {
                                         <h3 style={{textAlign: "left", color: "grey", fontWeight: "400"}}>Jou woorde</h3>
                                     </div>
                                     <div style={{paddingRight: "5%", paddingTop: "12%"}}>
-                                        <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}}>
+                                        <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}} onClick={() => this.setState({openWord: true})}>
                                             <AddIcon style={{color: "white"}}/>
                                         </IconButton> 
                                     </div>
@@ -86,6 +92,29 @@ export default class WordlistCreator extends React.Component {
                             </Paper>
                         </div>
                     </div>
+                    <Dialog fullScreen open={this.state.openWord} onClose={() => this.setState({openWord: false})}>
+                        <DialogTitle>Add Word</DialogTitle>
+                        <div style={{marginLeft: "5%"}}>
+                            <Paper elevation={0} style={{textAlign: "center"}}>
+                                <TextField label="Word in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistName: e.target.value})}></TextField>
+                                <br></br>
+                                <TextField label="Definition in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
+                                <br></br>
+                                <TextField label="Word in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
+                                <br></br>
+                                <TextField label="Definition in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
+                                <br></br>
+                                <Button variant="contained" component="label">
+                                    Upload File
+                                    <input type="file" hidden/>
+                                </Button>
+                                <br></br>
+                                <div style={{textAlign: "center"}}>
+                                    <Button color="primary" variant="filled" onClick={this.createWordlist}>Go</Button>
+                                </div>
+                            </Paper>
+                        </div>
+                    </Dialog>
                 </div>
             )
         }

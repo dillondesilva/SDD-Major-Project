@@ -26,10 +26,9 @@ function App() {
         <Register/>
       </Route>
       <Route path="/dashboard">
-        <Dashboard/>
+        <Dashboard />
       </Route>
-      <Route path="/edit/:id" >
-        <WordlistCreator/>
+      <Route path="/edit/:id" component={WordlistCreator}>
       </Route>
     </Router>
   );
