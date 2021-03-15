@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Input, Tooltip, Button, IconButton, TextField, Dialog, Zoom, DialogTitle, Paper } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import CreateIcon from '@material-ui/icons/Create';
@@ -124,7 +125,10 @@ export default class Dashboard extends React.Component {
                                     Object.keys(this.state.existingWordlists).map((wordlistCode) => {
                                         let wordlistData = this.state.existingWordlists[wordlistCode]
                                         return (
-                                            <h1>{wordlistData.wordlist_name}</h1>
+                                            <div>
+                                                <Link to="/edit/487y743">{wordlistData.wordlist_name}</Link>
+                                                <br></br>
+                                            </div>
                                         )
                                     })
                                 }
