@@ -34,6 +34,9 @@ export default class WordlistCreator extends React.Component {
         let wordlistCode = this.props.match.params.id;
         this.setState({
             wordlistCode: wordlistCode
+        }, () => {
+            // Gets the current words to display in a wordlist
+            this.getWords()
         })
 
         fetch('http://sddmajordev:5000/api/userbase/get_user_by_uid', {
@@ -49,12 +52,17 @@ export default class WordlistCreator extends React.Component {
         })
     }
 
+    // Calls the addWord API Endpoint and then adds a given word
+    // to the current wordlist
     addWord() {
         let uid = sessionStorage.getItem("uid");
 
         let wordData = {
             "uid": uid,
             "wordToAdd": this.state.wordToAdd,
+            "definitionToAdd": this.state.definitionToAdd,
+            "wordTranslationToAdd": this.state.wordTranslationToAdd,
+            "definitionTranslationToAdd": this.state.definitionTranslationToAdd,
             "wordlistCode": this.state.wordlistCode
         }
 
@@ -71,6 +79,27 @@ export default class WordlistCreator extends React.Component {
                 openWord: false
             })
         })
+    }
+
+    getWords() {
+        let uid = sessionStorage.getItem("uid");
+
+        let wordData = {
+            "uid": uid,
+            "wordlistCode": this.state.wordlistCode
+        }
+
+        fetch('http://sddmajordev:5000/api/wordlist/get_words', {
+            method: 'post',
+            headers: {
+                'Content-Type':  'application/json',
+            }, 
+            body: JSON.stringify(wordData)
+            })
+            .then(response => response.json())
+            .then(data => {
+            console.log(data["words"])
+        }) 
     }
 
     render() {
@@ -106,6 +135,9 @@ export default class WordlistCreator extends React.Component {
                                         </IconButton> 
                                     </div>
                                 </div>
+                                <div style={{textAlign: "center", paddingTop: "10%"}}>
+                                    <h4>Words</h4>
+                                </div>
                             </Paper>
                         </div>
                         <div style={{display: "inline-block"}}>
@@ -124,13 +156,13 @@ export default class WordlistCreator extends React.Component {
                         <DialogTitle>Add Word</DialogTitle>
                         <div style={{marginLeft: "5%"}}>
                             <Paper elevation={0} style={{textAlign: "center"}}>
-                                <TextField label="Word in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistName: e.target.value})}></TextField>
+                                <TextField label="Word in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordToAdd: e.target.value})}></TextField>
                                 <br></br>
-                                <TextField label="Definition in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
+                                <TextField label="Definition in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({definitionToAdd: e.target.value})}></TextField>
                                 <br></br>
-                                <TextField label="Word in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
+                                <TextField label="Word in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordTranslationToAdd: e.target.value})}></TextField>
                                 <br></br>
-                                <TextField label="Definition in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
+                                <TextField label="Definition in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({definitionTranslationToAdd: e.target.value})}></TextField>
                                 <br></br>
                                 <Button variant="contained" component="label">
                                     Upload Image

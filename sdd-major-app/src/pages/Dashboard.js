@@ -126,7 +126,7 @@ export default class Dashboard extends React.Component {
                                         let wordlistData = this.state.existingWordlists[wordlistCode]
                                         return (
                                             <div>
-                                                <Link to="/edit/487y743">{wordlistData.wordlist_name}</Link>
+                                                <Link to={`/edit/${wordlistCode}`}>{wordlistData.wordlist_name}</Link>
                                                 <br></br>
                                             </div>
                                         )
