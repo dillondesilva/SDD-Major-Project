@@ -25,7 +25,8 @@ def create_wordlist():
 
     wordlist_data = {
         "wordlist_name": wordlist_name,
-        "wordlist_des": wordlist_des
+        "wordlist_des": wordlist_des,
+        "words": {}
     }
 
     user_query = {
@@ -57,6 +58,25 @@ def get_all_wordlists():
 
     user_query = {
         "uid": uid
+    }
+
+    response = ""
+    requested_user = db.wordlists.find(user_query)
+    if requested_user.count() != 0:
+        existing_wordlists = requested_user[0]["wordlists"]
+        response = existing_wordlists
+
+    return jsonify(wordlists=response)
+
+# Creates a word for a given wordlist code
+@wordlist_api.route("/add_word", methods=["POST"])
+@cross_origin()
+def get_all_wordlists():
+    uid = request.json["uid"]
+    wordlist_code = request.json["wordlistCode"]
+
+    user_query = {
+        "uid": uid,
     }
 
     response = ""

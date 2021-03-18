@@ -16,7 +16,11 @@ export default class WordlistCreator extends React.Component {
                 email: ""
             },
             wordlistCode: "",
-            openWord: false
+            openWord: false,
+            wordToAdd: "",
+            definitionToAdd: "",
+            wordTranslationToAdd: "",
+            definitionTranslationToAdd: ""
         }
     }
 
@@ -42,6 +46,30 @@ export default class WordlistCreator extends React.Component {
           .then(response => response.json())
           .then(data => {
               this.setState({userDetails: data})
+        })
+    }
+
+    addWord() {
+        let uid = sessionStorage.getItem("uid");
+
+        let wordData = {
+            "uid": uid,
+            "wordToAdd": this.state.wordToAdd,
+            "wordlistCode": this.state.wordlistCode
+        }
+
+        fetch('http://sddmajordev:5000/api/wordlist/add_word', {
+            method: 'post',
+            headers: {
+              'Content-Type':  'application/json',
+            }, 
+            body: JSON.stringify(wordData)
+          })
+          .then(response => response.json())
+          .then(data => {
+            this.setState({
+                openWord: false
+            })
         })
     }
 
@@ -105,12 +133,12 @@ export default class WordlistCreator extends React.Component {
                                 <TextField label="Definition in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
                                 <br></br>
                                 <Button variant="contained" component="label">
-                                    Upload File
+                                    Upload Image
                                     <input type="file" hidden/>
                                 </Button>
                                 <br></br>
                                 <div style={{textAlign: "center"}}>
-                                    <Button color="primary" variant="filled" onClick={this.createWordlist}>Go</Button>
+                                    <Button color="primary" variant="filled" onClick={() => this.addWord()}>Add Word</Button>
                                 </div>
                             </Paper>
                         </div>
