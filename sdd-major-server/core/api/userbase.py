@@ -12,7 +12,8 @@ import hashlib
 # Specifying this file as an API subsection blueprint
 userbase_api = Blueprint('userbase_api', __name__)
 
-db = MongoClient("mongodb://localhost:27017/?retryWrites=true&w=majority")["DEV"]
+MONGO_HOST = os.getenv("MONGO_HOST") or "localhost"
+db = MongoClient(f"mongodb://{MONGO_HOST}:27017/?retryWrites=true&w=majority")["DEV"]
 
 # Creates a new user instance in MongoDB
 @userbase_api.route("/create_user", methods=["POST"])

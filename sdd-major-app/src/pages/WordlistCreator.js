@@ -20,7 +20,9 @@ export default class WordlistCreator extends React.Component {
             wordToAdd: "",
             definitionToAdd: "",
             wordTranslationToAdd: "",
-            definitionTranslationToAdd: ""
+            definitionTranslationToAdd: "",
+            words: [],
+            selectedWord: "none"
         }
     }
 
@@ -66,7 +68,7 @@ export default class WordlistCreator extends React.Component {
             "wordlistCode": this.state.wordlistCode
         }
 
-        fetch('http://sddmajordev:5000/api/wordlist/add_word', {
+        fetch('/api/wordlist/add_word', {
             method: 'post',
             headers: {
               'Content-Type':  'application/json',
@@ -77,6 +79,8 @@ export default class WordlistCreator extends React.Component {
           .then(data => {
             this.setState({
                 openWord: false
+            }, () => {
+                this.getWords();
             })
         })
     }
@@ -89,7 +93,7 @@ export default class WordlistCreator extends React.Component {
             "wordlistCode": this.state.wordlistCode
         }
 
-        fetch('http://sddmajordev:5000/api/wordlist/get_words', {
+        fetch('/api/wordlist/get_words', {
             method: 'post',
             headers: {
                 'Content-Type':  'application/json',
@@ -98,7 +102,9 @@ export default class WordlistCreator extends React.Component {
             })
             .then(response => response.json())
             .then(data => {
-            console.log(data["words"])
+                this.setState({
+                    words: data["words"]
+                })
         }) 
     }
 
@@ -136,7 +142,13 @@ export default class WordlistCreator extends React.Component {
                                     </div>
                                 </div>
                                 <div style={{textAlign: "center", paddingTop: "10%"}}>
-                                    <h4>Words</h4>
+                                    {
+                                        this.state.words.map((word) => {
+                                            return (
+                                                <Button style={{width: "100%", borderRadius: "0"}}>{word.word}</Button> 
+                                            )
+                                        })
+                                    }
                                 </div>
                             </Paper>
                         </div>

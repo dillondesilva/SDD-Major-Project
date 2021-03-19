@@ -62,7 +62,7 @@ export default class Register extends React.Component {
   //   testConnectionToLocalServer();
   // }, []);
   registerUser() {
-    fetch('http://sddmajordev:5000/api/userbase/create_user', {
+    fetch('/api/userbase/create_user', {
       method: 'post',
       headers: {
         'Content-Type':  'application/json',

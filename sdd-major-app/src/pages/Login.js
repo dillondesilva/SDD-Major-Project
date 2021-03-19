@@ -45,7 +45,7 @@ export default class Login extends React.Component {
   }
 
   loginUser() {
-    fetch('http://sddmajordev:5000/api/userbase/verify_user', {
+    fetch('/api/userbase/verify_user', {
       method: 'post',
       headers: {
         'Content-Type':  'application/json',
