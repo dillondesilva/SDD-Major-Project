@@ -27,7 +27,7 @@ export default class Dashboard extends React.Component {
     // Adding user details pre render
     componentWillMount() {
         let uid = sessionStorage.getItem("uid");
-        fetch('http://sddmajordev:5000/api/userbase/get_user_by_uid', {
+        fetch('api/userbase/get_user_by_uid', {
             method: 'post',
             headers: {
               'Content-Type':  'application/json',
@@ -44,7 +44,7 @@ export default class Dashboard extends React.Component {
     getWordlists() {
         let uid = sessionStorage.getItem("uid");
         console.log(uid)
-        fetch('http://sddmajordev:5000/api/wordlist/get_all_wordlists', {
+        fetch('api/wordlist/get_all_wordlists', {
             method: 'post',
             headers: {
               'Content-Type':  'application/json',
@@ -72,7 +72,7 @@ export default class Dashboard extends React.Component {
             uid: uid
         }
 
-        fetch('http://sddmajordev:5000/api/wordlist/create_wordlist', {
+        fetch('api/wordlist/create_wordlist', {
             method: 'post',
             headers: {
               'Content-Type':  'application/json',

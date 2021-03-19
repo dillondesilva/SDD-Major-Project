@@ -41,7 +41,7 @@ export default class WordlistCreator extends React.Component {
             this.getWords()
         })
 
-        fetch('http://sddmajordev:5000/api/userbase/get_user_by_uid', {
+        fetch('api/userbase/get_user_by_uid', {
             method: 'post',
             headers: {
               'Content-Type':  'application/json',
