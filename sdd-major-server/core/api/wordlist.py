@@ -100,12 +100,14 @@ def add_word():
     definition_to_add = request.json["definitionToAdd"]
     translated_word_to_add = request.json["wordTranslationToAdd"]
     definition_translation_to_add = request.json["definitionTranslationToAdd"]
+    img_to_add = request.json["imageToAdd"]
 
     word_data = {
         "word": word_to_add,
-        "word_translation": translated_word_to_add,
+        "translated_word": translated_word_to_add,
         "definition": definition_to_add,
-        "translated_definition": definition_translation_to_add
+        "translated_definition": definition_translation_to_add,
+        "img": img_to_add
     }
 
     user_query = {

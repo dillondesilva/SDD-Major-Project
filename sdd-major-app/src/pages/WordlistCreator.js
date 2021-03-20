@@ -20,6 +20,7 @@ export default class WordlistCreator extends React.Component {
             wordToAdd: "",
             definitionToAdd: "",
             wordTranslationToAdd: "",
+            imageToAdd: "",
             definitionTranslationToAdd: "",
             words: [],
             selectedWord: "none"
@@ -59,13 +60,21 @@ export default class WordlistCreator extends React.Component {
     addWord() {
         let uid = sessionStorage.getItem("uid");
 
+        // Instantiating a new file reader to convert 
+        // user selected image to blob
+        const reader = new FileReader();
+        reader.addEventListener("load", () => {
+            console.log(reader.result)
+        })
+
         let wordData = {
             "uid": uid,
             "wordToAdd": this.state.wordToAdd,
             "definitionToAdd": this.state.definitionToAdd,
             "wordTranslationToAdd": this.state.wordTranslationToAdd,
             "definitionTranslationToAdd": this.state.definitionTranslationToAdd,
-            "wordlistCode": this.state.wordlistCode
+            "wordlistCode": this.state.wordlistCode,
+            "imageToAdd": this.state.imageToAdd
         }
 
         fetch('/api/wordlist/add_word', {
@@ -83,6 +92,22 @@ export default class WordlistCreator extends React.Component {
                 this.getWords();
             })
         })
+    }
+
+    fileToBlob(eventData) {
+        const reader = new FileReader();
+        const file = eventData.target.files[0];
+
+        reader.addEventListener("load", () => {
+            // convert image file to base64 string
+            this.setState({
+                imageToAdd: reader.result
+            })
+        }, false);
+
+        if (file) {
+            reader.readAsDataURL(file);
+        }
     }
 
     getWords() {
@@ -106,6 +131,44 @@ export default class WordlistCreator extends React.Component {
                     words: data["words"]
                 })
         }) 
+    }
+
+    // Changes the selected word in the side panel
+    changeSelectedWord(selectedWordIndex) {
+        let selectedWordData = this.state.words[selectedWordIndex]
+        this.setState({
+            selectedWord: selectedWordData
+        }, () => {
+            console.log(this.state.selectedWord)
+        })
+    }
+
+    renderWordCard() {
+        // Return an empty card indicating to select a word if no
+        // word has been selected
+        if (this.state.selectedWord === "none") {
+            return (
+                <Paper elevation={3} style={{width: "700px", height: "500px", borderRadius: "10px", position: "absolute", display: "relative"}}>
+                    <div style={{position: "absolute", top: "65%", left: "50%", width: "300px", height: "300px", marginTop: "-150px", marginLeft: "-150px"}}>
+                        <h1 style={{textAlign: "center"}}>No Word Selected</h1>
+                        <p style={{textAlign: "center"}}>Please select a word to view from the panel to the left</p>
+                    </div>
+                </Paper>  
+            )
+        } else {
+            return (
+                <Paper elevation={3} style={{width: "700px", height: "500px", borderRadius: "10px", position: "absolute"}}>
+                    <h2 style={{paddingLeft: "5%", paddingTop: "5%", textAlign: "left"}}>{this.state.selectedWord.word}</h2>
+                    <h3 style={{paddingLeft: "5%", textAlign: "left", color: "grey", fontWeight: "400"}}>{this.state.selectedWord.translated_word}</h3>
+                    <div style={{textAlign: "center"}}>
+                        <img src={this.state.selectedWord.img} style={{position: "relative", maxWidth: "300px", maxHeight: "200px"}}></img>
+                    </div>
+                    <br></br>
+                    <p style={{paddingLeft: "5%", paddingTop: "1%", textAlign: "left"}}>{this.state.selectedWord.definition}</p>
+                    <p style={{paddingLeft: "5%", paddingTop: "1%", textAlign: "left", color: "grey"}}>{this.state.selectedWord.translated_definition}</p>
+                </Paper>      
+            )
+        }
     }
 
     render() {
@@ -143,9 +206,12 @@ export default class WordlistCreator extends React.Component {
                                 </div>
                                 <div style={{textAlign: "center", paddingTop: "10%"}}>
                                     {
-                                        this.state.words.map((word) => {
+                                        this.state.words.map((word, index) => {
+                                            // wordIndex refers to the index of the word within this.state.words
+                                            // for selection
+                                            let wordIndex = index
                                             return (
-                                                <Button style={{width: "100%", borderRadius: "0"}}>{word.word}</Button> 
+                                                <Button style={{width: "100%", borderRadius: "0"}} onClick={() => this.changeSelectedWord(wordIndex)}>{word.word}</Button> 
                                             )
                                         })
                                     }
@@ -153,15 +219,7 @@ export default class WordlistCreator extends React.Component {
                             </Paper>
                         </div>
                         <div style={{display: "inline-block"}}>
-                            <Paper elevation={3} style={{width: "700px", height: "500px", borderRadius: "10px", position: "absolute"}}>
-                                <h2 style={{paddingLeft: "5%", paddingTop: "5%", textAlign: "left"}}>Vectors</h2>
-                                <h3 style={{paddingLeft: "5%", textAlign: "left", color: "grey", fontWeight: "400"}}>Vektore</h3>
-                                <div style={{textAlign: "center"}}>
-                                    <img src={image} style={{position: "relative", maxWidth: "300px"}}></img>
-                                </div>
-                                <br></br>
-                                <p style={{paddingLeft: "5%", paddingTop: "1%", textAlign: "left"}}>Lopsem ipsum</p>
-                            </Paper>
+                            { this.renderWordCard() }
                         </div>
                     </div>
                     <Dialog fullScreen open={this.state.openWord} onClose={() => this.setState({openWord: false})}>
@@ -178,7 +236,7 @@ export default class WordlistCreator extends React.Component {
                                 <br></br>
                                 <Button variant="contained" component="label">
                                     Upload Image
-                                    <input type="file" hidden/>
+                                    <input type="file" onChange={(e) => this.fileToBlob(e)} hidden/>
                                 </Button>
                                 <br></br>
                                 <div style={{textAlign: "center"}}>
