@@ -27,9 +27,18 @@ export default class Home extends React.Component {
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <HomeAppBar/>
-        </header>
+        <ThemeProvider theme={theme}>
+            <AppBar color='primary' theme={theme}>
+              <div style={{display: "inline-block"}}>
+                <h3 style={{marginRight: "100px", display: "inline-block", textDecoration: "none"}}>
+                  <Link to="/login" style={{textDecoration: "none"}}>Sign In</Link>
+                </h3> 
+                <h3 style={{marginRight: "100px", display: "inline-block"}}>
+                  <Link to="/register">Register</Link>
+                </h3> 
+              </div>
+            </AppBar>
+        </ThemeProvider> 
       </div>
     ); 
   }
