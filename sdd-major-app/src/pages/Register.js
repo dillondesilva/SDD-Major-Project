@@ -1,38 +1,43 @@
+// Importing React and necessary dependencies for project
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import { AppBar, TextField, Button, Radio, RadioGroup, FormControl, FormControlLabel, FormLabel } from '@material-ui/core';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import green from '@material-ui/core/colors/green';
-import HomeAppBar from '../components/HomeAppBar'
 
+// theme stores all the data regarding the styling
+// of several UI elements
 const theme = createMuiTheme({
   overrides: {
+     // Overriding the default AppBar and TextField component style
     MuiAppBar: {
+      // Setting its background color to be orange based
       colorPrimary: {
         backgroundColor: '#FFA474',
       },
     },
     MuiTextField: {
+      // Setting its background color to be orange based
       colorPrimary: {
         backgroundColor: '#FFA474',
       },
     },
   },
+  // Main color for elements in the orange shade
   palette: {
     primary: {
       main: "#ffa474",
     },
-    secondary: {
-      main: green[500],
-    },
   },
 });
 
+// React class component for the register page
 export default class Register extends React.Component {
   constructor(props) {
     super(props);
 
-    // State
+    // State variable for this component to store the 
+    // value of registration fields
     this.state = {
       emailValue: "",
       usernameValue: "",
@@ -40,40 +45,37 @@ export default class Register extends React.Component {
       pwdConfirmValue: "",
       accountType: ""
     };
-
-    // Refs
-    this.email = React.createRef();
-    this.pwd = React.createRef();
-    this.pwdConfirm = React.createRef();
   }
 
-  testConnectionToLocalServer() {
-    return fetch("https://sddmajordev:5000/test")
-    .then(response => response.json())
-    .then(data => {
-
-      alert("Registration successful. Please proceed to login page");
-    })
-    .catch((err) => {
-        console.log(err);
-    });
-  }
-
+  // Calls create_user API Endpoint to add a new user to the database
   registerUser() {
     fetch('/api/userbase/create_user', {
       method: 'post',
       headers: {
         'Content-Type':  'application/json',
       }, 
+      // Sends the registration details in state to endpoint
       body: JSON.stringify(this.state)
     })
+    // Get the response json
     .then(response => response.json())
     .then(data => {
-      alert("Account created! Proceeding to sign in page :)")
-      window.location = "/login"
+      if (data["error"]){
+        Swal.fire({
+          title: 'Oops!',
+          text: data["error"],
+          icon: 'error',
+          cancelButtonText: 'Retry'
+        })
+      } else {
+        // Displays account was created and redirects users to login page
+        alert("Account created! Proceeding to sign in page :)")
+        window.location = "/login"  
+      }
     })
   }
 
+  // Renders UI elements for the registration screen
   render() {
     return (
       <div>

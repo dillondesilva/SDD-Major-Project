@@ -5,7 +5,7 @@ import AddIcon from '@material-ui/icons/Add';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 
 // React class component for wordlist creation
-export default class WordlistCreator extends React.Component {
+export default class Viewer extends React.Component {
     constructor(props) {
         super(props);
 

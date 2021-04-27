@@ -1,3 +1,4 @@
+// Importing React and necessary dependencies for project
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AppBar, Typography } from '@material-ui/core';
