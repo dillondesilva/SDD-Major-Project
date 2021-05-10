@@ -26,10 +26,6 @@ export default class Viewer extends React.Component {
             definitionTranslationToAdd: "", // a string storing the translation of a word definition
             words: [], // an array of words currently in the list
             selectedWord: "none", // the currently selected word in the viewer
-            openAssignWordlist: false, // should the dialog box for managing students to a wordlist be open
-            assignedStudents: [], // assignedStudents stores student names assigned to the wordlist
-            students: [], // students stores the possible options for assignments
-            studentsToAdd: [] // stores the students to add to a wordlist during the assignment process
         }
     }
 
@@ -44,7 +40,6 @@ export default class Viewer extends React.Component {
         }, () => {
             // Gets the current words to display in a wordlist
             this.getWords();
-            this.getStudents();
         })
 
         // Calling API Endpoint to get user details based
@@ -134,13 +129,10 @@ export default class Viewer extends React.Component {
 
     // Gets all the current words
     getWords() {
-        let uid = sessionStorage.getItem("uid");
-
         // Comprises a query to put in database for 
         // this specific wordlists's words
         let wordlistData = {
-            "uid": uid,
-            "wordlistCode": this.state.wordlistCode
+            "wordlistCode": this.state.wordlistCode,
         }
 
         // Calling the get_words API endpoint
@@ -160,27 +152,6 @@ export default class Viewer extends React.Component {
                 this.setState({
                     words: data["words"]
                 })
-        }) 
-    }
-
-    // Gets the current students under a teacher and updates
-    // the state of known students
-    getStudents() {
-        let uid = sessionStorage.getItem("uid");
-
-        // Getting students that belong to a teacher
-        fetch('/api/userbase/get_students', {
-            method: 'post',
-            headers: {
-                'Content-Type':  'application/json',
-            }, 
-            body: JSON.stringify({"uid": uid})
-            })
-            // Get the response json
-            .then(response => response.json())
-            .then(data => {
-                // Sets the students state to store whatever the server returned
-                this.setState({students: data["students"]})
         }) 
     }
 
@@ -228,30 +199,6 @@ export default class Viewer extends React.Component {
         }
     }
 
-    // Adds students to a wordlist following the assignment process
-    addStudentsToWordlist() {
-        // addRequestData stores all the data to send to server for assigning wordlists
-        // to students
-        let addRequestData = {
-            studentsToAdd: this.state.studentsToAdd,
-            wordlistCode: this.state.wordlistCode
-        };
-
-        fetch('/api/userbase/add_students_to_wordlist', {
-            method: 'post',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(addRequestData)
-        })
-        // Get the response json
-        .then(response => response.json())
-        .then(data => {
-            // Re render the current students assigned to the list
-            this.getStudents()
-        }) 
-    }
-
     // Renders UI elements for the wordlist editor
     render() {
         if (this.state.accountType === "student") {
@@ -263,7 +210,7 @@ export default class Viewer extends React.Component {
                     <div style={{paddingTop: "1%"}}>
                         <h1 style={{paddingLeft: "2%", display: "inline"}}>10 IST</h1>
                         <div style={{paddingRight: "1%", display: "inline"}}>
-                            <Button style={{float: "right"}} onClick={() => this.setState({openAssignWordlist: true})}>Assign Wordlist</Button>
+                            <Button style={{float: "right"}} variant="outlined" onClick={() => {window.location = `/mode_select/${this.state.wordlistCode}`}}>Practice Mode</Button>
                         </div>
                     </div>
                     <div style={{marginLeft: "2%"}}>
@@ -298,53 +245,6 @@ export default class Viewer extends React.Component {
                             { this.renderWordCard() }
                         </div>
                     </div>
-                    <Dialog fullScreen open={this.state.openWord} onClose={() => this.setState({openWord: false})}>
-                        <DialogTitle>Add Word</DialogTitle>
-                        <div style={{marginLeft: "5%"}}>
-                            <Paper elevation={0} style={{textAlign: "center"}}>
-                                <TextField label="Word in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordToAdd: e.target.value})}></TextField>
-                                <br></br>
-                                <TextField label="Definition in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({definitionToAdd: e.target.value})}></TextField>
-                                <br></br>
-                                <TextField label="Word in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordTranslationToAdd: e.target.value})}></TextField>
-                                <br></br>
-                                <TextField label="Definition in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({definitionTranslationToAdd: e.target.value})}></TextField>
-                                <br></br>
-                                <Button variant="contained" component="label">
-                                    Upload Image
-                                    <input type="file" onChange={(e) => this.fileToBlob(e)} hidden/>
-                                </Button>
-                                <br></br>
-                                <div style={{textAlign: "center"}}>
-                                    <Button color="primary" variant="filled" onClick={() => this.addWord()}>Add Word</Button>
-                                </div>
-                            </Paper>
-                        </div>
-                    </Dialog>
-                    <Dialog open={this.state.openAssignWordlist} onClose={() => this.setState({openAssignWordlist: false})} maxWidth={"md"} fullWidth={true}>
-                        <DialogTitle>Assign Students</DialogTitle>
-                        <div style={{marginLeft: "5%"}}>
-                            <Paper elevation={0} style={{textAlign: "center"}}>
-                            <Autocomplete
-                            multiple
-                            value={this.state.studentsToAdd}
-                            options={this.state.students}
-                            getOptionLabel={(option) => option[1]}
-                            style={{ width: 300 }}
-                            onChange={(event, value) => this.setState({studentsToAdd: value})}
-                            renderInput={(params) => <TextField {...params} label="Search for student" variant="outlined" />}
-                            />
-                            <Button onClick={() => this.addStudentsToWordlist()}>Add</Button>
-                                {
-                                    this.state.students.map((student, index) => {
-                                        return (
-                                            <p>{student[1]}</p>  
-                                        )
-                                    })
-                                }
-                            </Paper>
-                        </div>
-                    </Dialog>
                 </div>
             )
         }

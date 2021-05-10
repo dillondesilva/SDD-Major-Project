@@ -242,7 +242,6 @@ def add_students_to_wordlist():
 def retrieve_wordlists_from_code(code, db_snapshot):
     for user_obj in db_snapshot:
         if code in user_obj["wordlists"]:
-            print("yo")
             return user_obj["wordlists"][code]
     return
 

@@ -12,6 +12,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import WordlistCreator from './pages/WordlistCreator';
+import Viewer from './pages/Viewer';
+import ModeSelection from './pages/ModeSelection';
+import Quiz from './pages/Quiz';
 
 function App() {
   return (
@@ -29,6 +32,12 @@ function App() {
         <Dashboard />
       </Route>
       <Route path="/edit/:id" component={WordlistCreator}>
+      </Route>
+      <Route path="/view/:id" component={Viewer}>
+      </Route>
+      <Route path="/mode_select/:id" component={ModeSelection}>
+      </Route>
+      <Route path="/quiz/:id" component={Quiz}>
       </Route>
     </Router>
   );

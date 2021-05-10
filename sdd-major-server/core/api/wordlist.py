@@ -85,25 +85,25 @@ def get_all_wordlists():
 # Gets words from a given wordlist code
 @wordlist_api.route("/get_words", methods=["POST"])
 @cross_origin()
-def get_word():
-    uid = request.json["uid"]
+def get_words():
+    # uid = request.json["uid"]
     wordlist_code = request.json["wordlistCode"]
 
-    # Search for the user in the database.
-    user_query = {
-        "uid": uid
-    }
+    # # Search for the user in the database.
+    # user_query = {
+    #     "uid": uid
+    # }
 
     response = ""
 
-    requested_user = db.wordlists.find(user_query)
-    if requested_user.count() != 0:
-        # Getting the current existing wordlists
-        requested_wordlist = requested_user[0]["wordlists"][wordlist_code]
-        words_to_return = requested_wordlist["words"]
-        response = words_to_return
+    wordlist_db = db.wordlists.find({})
+    for user_obj in wordlist_db:
+        if wordlist_code in user_obj["wordlists"]:
+            words_to_return = user_obj["wordlists"][wordlist_code]["words"]
+            response = words_to_return
+            return jsonify(words=response)
 
-    return jsonify(words=response)
+    return response
 
 # Creates a word for a given wordlist code
 @wordlist_api.route("/add_word", methods=["POST"])

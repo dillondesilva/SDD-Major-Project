@@ -47,21 +47,19 @@ export default class Dashboard extends React.Component {
           .then(response => response.json())
           .then(data => {
               // Sets the userDetails state to store whatever the server returned
-              this.setState({userDetails: data})
-        }, () => {
-            // Additional procedures to run if we are in the student dashboard
-            if (this.state.userDetails.accountType === "student") {
-                // Run these processes
-            }
+              this.setState({
+                  userDetails: data
+              }, () => {
+                    // gets the wordlists to be displayed in the dashboard
+                    this.getWordlists();
+              })
         })
-        // gets the wordlists to be displayed in the dashboard
-        this.getWordlists();
     }
 
     // Gets all the wordlists for a user based off their UID
     getWordlists() {
         let uid = sessionStorage.getItem("uid");
-        if (this.state.accountType === "teacher") {
+        if (this.state.userDetails.accountType === "teacher") {
             // Call the get_all_wordlists API Endpoint
             fetch('api/wordlist/get_all_wordlists', {
                 method: 'post',
@@ -80,7 +78,7 @@ export default class Dashboard extends React.Component {
                 })
             })
         } else {
-            // Call the get_all_wordlists API Endpoint
+            // Call the get_assigned_wordlists API Endpoint for a student
             fetch('api/userbase/get_assigned_wordlists', {
                 method: 'post',
                 headers: {
