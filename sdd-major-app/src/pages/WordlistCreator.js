@@ -1,8 +1,14 @@
 // Importing React and necessary dependencies for project
 import React, { useEffect } from 'react'
-import { Paper, Button, IconButton, TextField, Dialog, DialogTitle, Input } from '@material-ui/core'
+import { Paper, Button, IconButton, 
+    TextField, Dialog, 
+    DialogTitle, Input,
+    Stepper, Step,
+    StepLabel, 
+    StepContent} from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import { TranslateClient, CreateParallelDataCommand } from "@aws-sdk/client-translate";
 
 // React class component for wordlist creation
 export default class WordlistCreator extends React.Component {
@@ -29,13 +35,32 @@ export default class WordlistCreator extends React.Component {
             openAssignWordlist: false, // should the dialog box for managing students to a wordlist be open
             assignedStudents: [], // assignedStudents stores student names assigned to the wordlist
             students: [], // students stores the possible options for assignments
-            studentsToAdd: [] // stores the students to add to a wordlist during the assignment process
+            studentsToAdd: [], // stores the students to add to a wordlist during the assignment process,
+            activeAddStep: 0 // stores the active step in the add word process
         }
     }
 
     // Adding user details pre render
     componentWillMount() {
         let uid = sessionStorage.getItem("uid");
+        const client = new TranslateClient({ region: "REGION" });
+        const params = {
+            "Text": "",
+            "SourceLanguageCode": "auto",
+            "TargetLanguageCode": "en"
+        };
+        const command = new CreateParallelDataCommand(params);
+
+        client.send(command).then(
+            (data) => {
+                // process data.
+                console.log(data)
+            },
+            (error) => {
+                // error handling.
+                console.log(error)
+            }
+        );
 
         // Gets the wordlist code from the URL parameters
         let wordlistCode = this.props.match.params.id;
@@ -257,6 +282,17 @@ export default class WordlistCreator extends React.Component {
         if (this.state.accountType === "student") {
             // Return Student Wordlist Editor (not implemented yet)
         } else {
+            const steps = [
+                {
+                    stepName: "Enter Word in English"
+                },
+                {
+                    stepName: "Choose Translation Data"
+                },
+                {
+                    stepName: "Add Images"
+                }
+            ]
             // Return Teacher Wordlist Editor UI Elements
             return (
                 <div>
@@ -302,6 +338,29 @@ export default class WordlistCreator extends React.Component {
                         <DialogTitle>Add Word</DialogTitle>
                         <div style={{marginLeft: "5%"}}>
                             <Paper elevation={0} style={{textAlign: "center"}}>
+                                <Paper style={{width: "250px", height: "250px", textAlign: "center"}}>
+                                    <TextField></TextField>
+                                </Paper>
+                                <Stepper style={{width: "60%"}} activeStep={this.state.activeAddStep}>
+                                    {steps.map((label, index) => {  
+                                        const stepProps = {};  
+                                        const labelProps = {};  
+                                        return (  
+                                            <Step>  
+                                                <StepLabel>{label.stepName}</StepLabel> 
+                                            </Step>  
+                                        );  
+                                    })}  
+                                    {/* <Step>
+                                        <p>Word in English</p>
+                                    </Step>
+                                    <Step>
+                                        <p>Choose Translation Data</p>
+                                    </Step>
+                                    <Step>
+                                        <p>Add Image</p>
+                                    </Step> */}
+                                </Stepper>
                                 <TextField label="Word in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordToAdd: e.target.value})}></TextField>
                                 <br></br>
                                 <TextField label="Definition in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({definitionToAdd: e.target.value})}></TextField>
