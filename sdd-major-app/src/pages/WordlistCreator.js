@@ -4,11 +4,11 @@ import { Paper, Button, IconButton,
     TextField, Dialog, 
     DialogTitle, Input,
     Stepper, Step,
-    StepLabel, 
-    StepContent} from '@material-ui/core'
+    StepLabel, StepContent,
+    Select, MenuItem} from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import { TranslateClient, CreateParallelDataCommand } from "@aws-sdk/client-translate";
+import '../css/WordlistCreator.css';
 
 // React class component for wordlist creation
 export default class WordlistCreator extends React.Component {
@@ -36,31 +36,14 @@ export default class WordlistCreator extends React.Component {
             assignedStudents: [], // assignedStudents stores student names assigned to the wordlist
             students: [], // students stores the possible options for assignments
             studentsToAdd: [], // stores the students to add to a wordlist during the assignment process,
-            activeAddStep: 0 // stores the active step in the add word process
+            activeAddStep: 0, // stores the active step in the add word process
+            targetLanguage: "en", // target language for translation
         }
     }
 
     // Adding user details pre render
     componentWillMount() {
         let uid = sessionStorage.getItem("uid");
-        const client = new TranslateClient({ region: "REGION" });
-        const params = {
-            "Text": "",
-            "SourceLanguageCode": "auto",
-            "TargetLanguageCode": "en"
-        };
-        const command = new CreateParallelDataCommand(params);
-
-        client.send(command).then(
-            (data) => {
-                // process data.
-                console.log(data)
-            },
-            (error) => {
-                // error handling.
-                console.log(error)
-            }
-        );
 
         // Gets the wordlist code from the URL parameters
         let wordlistCode = this.props.match.params.id;
@@ -106,8 +89,6 @@ export default class WordlistCreator extends React.Component {
             "uid": uid,
             "wordToAdd": this.state.wordToAdd,
             "definitionToAdd": this.state.definitionToAdd,
-            "wordTranslationToAdd": this.state.wordTranslationToAdd,
-            "definitionTranslationToAdd": this.state.definitionTranslationToAdd,
             "wordlistCode": this.state.wordlistCode,
             "imageToAdd": this.state.imageToAdd
         }
@@ -126,7 +107,10 @@ export default class WordlistCreator extends React.Component {
           .then(data => {
             // Setting the add new word panel to be closed
             this.setState({
-                openWord: false
+                openWord: false,
+                imageToAdd: "",
+                definitionToAdd:  "",
+                wordToAdd: ""
             }, () => {
                 // Refresh the words displayed
                 this.getWords();
@@ -165,7 +149,8 @@ export default class WordlistCreator extends React.Component {
         // this specific wordlists's words
         let wordlistData = {
             "uid": uid,
-            "wordlistCode": this.state.wordlistCode
+            "wordlistCode": this.state.wordlistCode,
+            "targetLanguage": this.state.targetLanguage
         }
 
         // Calling the get_words API endpoint
@@ -180,6 +165,40 @@ export default class WordlistCreator extends React.Component {
             // Get the response json
             .then(response => response.json())
             .then(data => {
+                for (let word in data["words"]) {
+                    console.log(data["words"][word])
+
+                    let translateData = {
+                        textToTranslate: data["words"][word]["word"], 
+                        targetLanguage: this.state.targetLanguage
+                    }
+
+                    fetch('/api/translate/basic_translate', {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(translateData)
+                    })
+                    .then(response => response.json())
+                    .then(d => {
+                        data["words"][word]["translated_word"] = d.res.TranslatedText
+                    })
+
+                    translateData.textToTranslate = data["words"][word]["definition"]; 
+
+                    fetch('/api/translate/basic_translate', {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(translateData)
+                    })
+                    .then(response => response.json())
+                    .then(d => {
+                        data["words"][word]["translated_definition"] = d.res.TranslatedText
+                    })
+                }
                 // Setting the words to displayed from state to be server's
                 // response with words
                 this.setState({
@@ -231,8 +250,8 @@ export default class WordlistCreator extends React.Component {
             return (
                 <Paper elevation={3} style={{width: "700px", height: "500px", borderRadius: "10px", position: "absolute", display: "relative"}}>
                     <div style={{position: "absolute", top: "65%", left: "50%", width: "300px", height: "300px", marginTop: "-150px", marginLeft: "-150px"}}>
-                        <h1 style={{textAlign: "center"}}>No Word Selected</h1>
-                        <p style={{textAlign: "center"}}>Please select a word to view from the panel to the left</p>
+                        <h1 style={{textAlign: "center"}} className="wordTitle">No Word Selected</h1>
+                        <p style={{textAlign: "center"}} className="wordDefinition">Please select a word to view from the panel to the left</p>
                     </div>
                 </Paper>  
             )
@@ -240,8 +259,8 @@ export default class WordlistCreator extends React.Component {
             // Return a styled word card with the appropriate information and image
             return (
                 <Paper elevation={3} style={{width: "700px", height: "500px", borderRadius: "10px", position: "absolute"}}>
-                    <h2 style={{paddingLeft: "5%", paddingTop: "5%", textAlign: "left"}}>{this.state.selectedWord.word}</h2>
-                    <h3 style={{paddingLeft: "5%", textAlign: "left", color: "grey", fontWeight: "400"}}>{this.state.selectedWord.translated_word}</h3>
+                    <h2 style={{paddingLeft: "5%", paddingTop: "5%", textAlign: "left"}} className="wordTitle">{this.state.selectedWord.word}</h2>
+                    <h3 style={{paddingLeft: "5%", textAlign: "left", color: "grey", fontWeight: "400"}} className="translatedWord">{this.state.selectedWord.translated_word}</h3>
                     <div style={{textAlign: "center"}}>
                         <img src={this.state.selectedWord.img} style={{position: "relative", maxWidth: "300px", maxHeight: "200px"}}></img>
                     </div>
@@ -277,6 +296,15 @@ export default class WordlistCreator extends React.Component {
         }) 
     }
 
+    // Allows for the target language to be changed and new words retrieved
+    changeTargetLanguage(e) {
+        this.setState({
+            targetLanguage: e.target.value
+        }, () => {
+            this.getWords();
+        })
+    }
+
     // Renders UI elements for the wordlist editor
     render() {
         if (this.state.accountType === "student") {
@@ -297,7 +325,6 @@ export default class WordlistCreator extends React.Component {
             return (
                 <div>
                     <div style={{paddingTop: "1%"}}>
-                        <h1 style={{paddingLeft: "2%", display: "inline"}}>10 IST</h1>
                         <div style={{paddingRight: "1%", display: "inline"}}>
                             <Button style={{float: "right"}} onClick={() => this.setState({openAssignWordlist: true})}>Assign Wordlist</Button>
                         </div>
@@ -305,28 +332,33 @@ export default class WordlistCreator extends React.Component {
                     <div style={{marginLeft: "2%"}}>
                         <div style={{display: "inline-block", marginRight: "40%"}}>
                             <Paper elevation={3} style={{width: "400px", height: "500px", borderRadius: "10px", position: "absolute"}}>
-                                <div style={{display: "inline-block", width: "100%"}}>
-                                    <div style={{position: "absolute", paddingLeft: "5%", paddingTop: "5%",}}>
-                                        <h2 style={{textAlign: "left"}}>Your Words</h2>
-                                        <h3 style={{textAlign: "left", color: "grey", fontWeight: "400"}}>Jou woorde</h3>
+                                <div>
+                                    <div className="languageSelector">
+                                        <div style={{position: "absolute", paddingLeft: "5%", paddingTop: "5%",}}>
+                                            <h2 style={{textAlign: "left"}} className="yourWords">Your Words</h2>
+                                            <Select value={this.state.targetLanguage} onChange={(e) => { this.changeTargetLanguage(e) }}>
+                                                <MenuItem value="en">English</MenuItem>
+                                                <MenuItem value="fr">French</MenuItem>
+                                            </Select>
+                                        </div>
+                                        <div style={{paddingRight: "5%", paddingTop: "12%"}}>
+                                            <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}} onClick={() => this.setState({openWord: true})}>
+                                                <AddIcon style={{color: "white"}}/>
+                                            </IconButton> 
+                                        </div>
                                     </div>
-                                    <div style={{paddingRight: "5%", paddingTop: "12%"}}>
-                                        <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}} onClick={() => this.setState({openWord: true})}>
-                                            <AddIcon style={{color: "white"}}/>
-                                        </IconButton> 
+                                    <div style={{textAlign: "center", paddingTop: "10%"}}>
+                                        {
+                                            this.state.words.map((word, index) => {
+                                                // wordIndex refers to the index of the word within this.state.words
+                                                // for selection
+                                                let wordIndex = index
+                                                return (
+                                                    <Button style={{width: "100%", borderRadius: "0"}} onClick={() => this.changeSelectedWord(wordIndex)}>{word.word}</Button> 
+                                                )
+                                            })
+                                        }
                                     </div>
-                                </div>
-                                <div style={{textAlign: "center", paddingTop: "10%"}}>
-                                    {
-                                        this.state.words.map((word, index) => {
-                                            // wordIndex refers to the index of the word within this.state.words
-                                            // for selection
-                                            let wordIndex = index
-                                            return (
-                                                <Button style={{width: "100%", borderRadius: "0"}} onClick={() => this.changeSelectedWord(wordIndex)}>{word.word}</Button> 
-                                            )
-                                        })
-                                    }
                                 </div>
                             </Paper>
                         </div>
@@ -338,10 +370,10 @@ export default class WordlistCreator extends React.Component {
                         <DialogTitle>Add Word</DialogTitle>
                         <div style={{marginLeft: "5%"}}>
                             <Paper elevation={0} style={{textAlign: "center"}}>
-                                <Paper style={{width: "250px", height: "250px", textAlign: "center"}}>
-                                    <TextField></TextField>
-                                </Paper>
-                                <Stepper style={{width: "60%"}} activeStep={this.state.activeAddStep}>
+                                {/* <Paper style={{width: "250px", height: "250px", textAlign: "center"}}>
+                                    <TextField value={this.state.wordToAdd} onChange={(e) => {this.setState({wordToAdd: e.target.value})}}></TextField>
+                                </Paper> */}
+                                {/* <Stepper style={{width: "60%"}} activeStep={this.state.activeAddStep}>
                                     {steps.map((label, index) => {  
                                         const stepProps = {};  
                                         const labelProps = {};  
@@ -360,14 +392,10 @@ export default class WordlistCreator extends React.Component {
                                     <Step>
                                         <p>Add Image</p>
                                     </Step> */}
-                                </Stepper>
+                                {/* </Stepper> */}
                                 <TextField label="Word in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordToAdd: e.target.value})}></TextField>
                                 <br></br>
                                 <TextField label="Definition in English" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({definitionToAdd: e.target.value})}></TextField>
-                                <br></br>
-                                <TextField label="Word in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({wordTranslationToAdd: e.target.value})}></TextField>
-                                <br></br>
-                                <TextField label="Definition in Alternate Language" variant="outlined" style={{marginTop: "20px", width: "80%"}} onChange={(e) => this.setState({definitionTranslationToAdd: e.target.value})}></TextField>
                                 <br></br>
                                 <Button variant="contained" component="label">
                                     Upload Image

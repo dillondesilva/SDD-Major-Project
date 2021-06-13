@@ -10,13 +10,14 @@ import bcrypt
 import json
 import os
 import hashlib
+import boto3
 
 # Specifying this file as an API subsection blueprint
 wordlist_api = Blueprint('wordlist_api', __name__)
 
-# Specifying this file as an API subsection blueprint
-MONGO_HOST = os.getenv("MONGO_HOST") or "localhost"
-db = MongoClient(f"mongodb://{MONGO_HOST}:27017/?retryWrites=true&w=majority")["DEV"]
+# Establish connection with mongo server
+MONGO_HOST = os.getenv("MONGO_HOST") or "mongodb://localhost:27017/?retryWrites=true&w=majority"
+db = MongoClient(MONGO_HOST)["DEV"]
 
 # Creates a new wordlist instance in Mongo
 @wordlist_api.route("/create_wordlist", methods=["POST"])
@@ -95,11 +96,51 @@ def get_words():
     # }
 
     response = ""
-
     wordlist_db = db.wordlists.find({})
     for user_obj in wordlist_db:
         if wordlist_code in user_obj["wordlists"]:
             words_to_return = user_obj["wordlists"][wordlist_code]["words"]
+            for word in words_to_return:
+                print(word)
+            response = words_to_return
+            return jsonify(words=response)
+
+    return response
+
+# Gets words from a given wordlist code with translations
+@wordlist_api.route("/get_words_with_translations", methods=["POST"])
+@cross_origin()
+def get_words_with_translations():
+    # uid = request.json["uid"]
+    wordlist_code = request.json["wordlistCode"]
+    target_lan = request.json["targetLanguage"]
+
+    translation_client = boto3.client('translate')
+
+    response = ""
+    wordlist_db = db.wordlists.find({})
+
+    for user_obj in wordlist_db:
+        if wordlist_code in user_obj["wordlists"]:
+            words_to_return = user_obj["wordlists"][wordlist_code]["words"]
+            for idx, word in enumerate(words_to_return):
+                translated_word = translation_client.translate_text(
+                    Text=word["word"],
+                    SourceLanguageCode="en",
+                    TargetLanguageCode=target_lan
+                )
+
+                translated_definition = translation_client.translate_text(
+                    Text=word["definition"],
+                    SourceLanguageCode="en",
+                    TargetLanguageCode=target_lan
+                )
+                
+                print(translated_word, translated_definition)
+                words_to_return[idx]["translated_word"] = translated_word["TranslatedText"]
+                words_to_return[idx]["translated_definition"] = translated_definition["TranslatedText"]
+
+
             response = words_to_return
             return jsonify(words=response)
 
@@ -114,16 +155,12 @@ def add_word():
     wordlist_code = request.json["wordlistCode"]
     word_to_add = request.json["wordToAdd"]
     definition_to_add = request.json["definitionToAdd"]
-    translated_word_to_add = request.json["wordTranslationToAdd"]
-    definition_translation_to_add = request.json["definitionTranslationToAdd"]
     img_to_add = request.json["imageToAdd"]
 
     # Putting JSON word data into a python dictionary for database
     word_data = {
         "word": word_to_add,
-        "translated_word": translated_word_to_add,
         "definition": definition_to_add,
-        "translated_definition": definition_translation_to_add,
         "img": img_to_add
     }
 

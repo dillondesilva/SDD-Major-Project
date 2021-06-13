@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from ..classes.user import User
 from uuid import uuid4
 import shortuuid
+import boto3
 import time
 import bcrypt
 import json
@@ -17,8 +18,8 @@ import re
 userbase_api = Blueprint('userbase_api', __name__)
 
 # Establish connection with mongo server
-MONGO_HOST = os.getenv("MONGO_HOST") or "localhost"
-db = MongoClient(f"mongodb://{MONGO_HOST}:27017/?retryWrites=true&w=majority")["DEV"]
+MONGO_HOST = os.getenv("MONGO_HOST") or "mongodb://localhost:27017/?retryWrites=true&w=majority"
+db = MongoClient(MONGO_HOST)["DEV"]
 
 # Creates a new user instance in MongoDB
 @userbase_api.route("/create_user", methods=["POST"])
@@ -56,9 +57,11 @@ def create_user():
             "account_type": account_type,
             "add_code": add_code,
             "salt": salt,
-            "students": []
+            "students": [],
+            "wordlists": []
         })
         # Return 200 and let frontend know user was created
+        print("user added")
         response = jsonify("New user created")
     else:
         # Returns an error message for passwords that don't match
@@ -75,16 +78,18 @@ def verify_user():
     # Search for the user in the database. Use this result
     # to check if passwords match
     user_query = {
-        "email": email
+        "email": {
+            "$regex": "^" + email + "$"
+        }
     }
 
     requested_user = db.users.find(user_query)
     users_found = requested_user.count()
 
-    response = ""
+    response = jsonify(error="Invalid email or password")
     # No user was found with the given email
+    print(users_found)
     if users_found == 0:
-        response = jsonify(empty="invalid email")
         return response
     else:
         # Get salt from db to verify via hashes
@@ -97,8 +102,9 @@ def verify_user():
             # If we hit this stage, return UID and a token
             uid = requested_user[0]["uid"]
             token = User.gen_token(uid)
+            print("yew")
             response = jsonify(access_token=token, uid=uid)
-    
+            
     return response
 
 # Verifies given user details exist in database
@@ -149,14 +155,13 @@ def add_student():
     requested_student = db.users.find(student_query)
     student_found = requested_student.count()
 
-    response = ""
+    response = jsonify(error="We couldn't find a student with that code.")
     # No student was found with that code
     if student_found == 0:
-        response = jsonify(error="We couldn't find a student with that code.")
         return response
     else:
         requested_user = db.users.find(user_query)[0]
-
+        response = jsonify(success="Student Added")
         if "students" in requested_user:
             current_students = requested_user["students"]
             print(current_students)
@@ -165,7 +170,7 @@ def add_student():
             insert_obj = {
                 "students": current_students
             }
-
+            
             db.users.update_one({
                 "uid": uid
             }, {"$set": insert_obj})
@@ -183,7 +188,6 @@ def add_student():
 @userbase_api.route("/get_students", methods=["POST"])
 @cross_origin()
 def get_students():
-    print("regrs")
     uid = request.json["uid"]
 
     # Querying for the current user's profile
@@ -220,17 +224,27 @@ def get_students():
 @userbase_api.route("/add_students_to_wordlist", methods=["POST"])
 @cross_origin()
 def add_students_to_wordlist():
+    # Getting students to add to wordlist via request data
     students_to_add = request.json["studentsToAdd"]
     wordlist_code = request.json["wordlistCode"]
-    print("u")
-    response = ""
 
+    response = ""
+    print(students_to_add)
+    # Repeated process to add student for each one
     for student in students_to_add:
         student_code = student[0]
-        insert_obj = {
-            "wordlists": [wordlist_code]
-        }
 
+        requested_student = db.users.find({
+            "add_code": student_code
+        })[0]
+
+        student_curr_wordlists = requested_student["wordlists"]
+        student_curr_wordlists.append(wordlist_code)
+
+        insert_obj = {
+            "wordlists": student_curr_wordlists
+        }
+        
         db.users.update_one({
             "add_code": student_code
         }, {"$set": insert_obj})
@@ -240,9 +254,12 @@ def add_students_to_wordlist():
 # Retrieves wordlist data from a single code given
 # a database snapshot
 def retrieve_wordlists_from_code(code, db_snapshot):
+    does_code_exist = False
     for user_obj in db_snapshot:
         if code in user_obj["wordlists"]:
+            does_code_exist = True
             return user_obj["wordlists"][code]
+
     return
 
 # Gets wordlists for a student account
@@ -250,7 +267,6 @@ def retrieve_wordlists_from_code(code, db_snapshot):
 @cross_origin()
 def get_assigned_wordlists():
     uid = request.json["uid"]
-    response = ""
 
     # Querying for the current user's profile
     user_query = {
@@ -258,11 +274,20 @@ def get_assigned_wordlists():
     }
 
     requested_user = db.users.find(user_query)[0]
+    print(requested_user["wordlists"])
     wordlist_codes = requested_user["wordlists"]
     wordlists = {}
-    wordlist_db = db.wordlists.find({})
+    wordlist_db_cursor = db.wordlists.find({})
+    wordlist_db = []
+    for data in wordlist_db_cursor:
+        wordlist_db.append(data)
+
     for code in wordlist_codes:
+        print(code)
         wordlist_data = retrieve_wordlists_from_code(code, wordlist_db)
         wordlists[code] = wordlist_data
-  
+        print(wordlist_data)
+        print("db type", type(wordlist_db))
+
+    print(wordlists)
     return jsonify(wordlists=wordlists)

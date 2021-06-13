@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AppBar, TextField, Button, Radio, RadioGroup, FormControl, FormControlLabel, FormLabel } from '@material-ui/core';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-
+import HomeAppBar from '../components/HomeAppBar';
+import '../css/Register.css'
 // theme stores all the data regarding the styling
 // of several UI elements
 const theme = createMuiTheme({
@@ -69,8 +70,14 @@ export default class Register extends React.Component {
         })
       } else {
         // Displays account was created and redirects users to login page
-        alert("Account created! Proceeding to sign in page :)")
-        window.location = "/login"  
+        Swal.fire({
+          title: 'Yay!',
+          text: "Account created! Proceeding to sign in page :)",
+          icon: 'success',
+          cancelButtonText: 'Retry'
+        }).then(() => {
+          window.location = "/login"   
+        })
       }
     })
   }
@@ -80,47 +87,42 @@ export default class Register extends React.Component {
     return (
       <div>
         <div className="App">
-          <ThemeProvider theme={theme}>
-            <AppBar color='primary' theme={theme}>
-              <div style={{display: "inline-block"}}>
-                <h3 style={{marginRight: "100px", display: "inline-block", textDecoration: "none"}}>
-                  <Link to="/login" style={{textDecoration: "none"}}>Sign In</Link>
-                </h3> 
-                <h3 style={{marginRight: "100px", display: "inline-block"}}>
-                  <Link to="/register">Register</Link>
-                </h3> 
+          <HomeAppBar></HomeAppBar> 
+            <div className="loginView">
+              <h2 className="loginTitle">Register</h2>
+              <div>
+                  <input value={this.state.emailValue} className="accountDetailInput" placeholder="Email" onChange={(e) => this.setState({emailValue: e.target.value})}></input>
               </div>
-            </AppBar>
-          </ThemeProvider> 
-          <div style={{marginTop: "10%"}}>
-            <ThemeProvider theme={theme}>
-                  <TextField value={this.state.emailValue} label="Email" color="primary" variant="outlined" 
-                  onChange={(e) => this.setState({emailValue: e.target.value})}/>
-                  <br></br>
-                  <TextField label="Username" color="primary" variant="outlined" 
-                  onChange={(e) => this.setState({usernameValue: e.target.value})}/>
-                  <br></br>
-                  <TextField label="Password" color="primary" variant="outlined"
-                  onChange={(e) => this.setState({pwdValue: e.target.value})}/>
-                  <br></br>
-                  <TextField label="Confirm Password" color="primary" variant="outlined"
-                  onChange={(e) => this.setState({pwdConfirmValue: e.target.value})}/>
-                  <br></br>
-                  <br></br>
-                  <FormControl component="fieldset">
-                    <FormLabel component="legend">I am a</FormLabel>
-                    <RadioGroup aria-label="gender" name="gender1" style={{display: "inline"}} value={this.state.accountType}
-                    onChange={(e) => this.setState({accountType: e.target.value})}>
-                      <FormControlLabel value="student" control={<Radio />} label="Student" />
-                      <FormControlLabel value="teacher" control={<Radio />} label="Teacher" />
-                    </RadioGroup>
-                  </FormControl>
-                  <br></br>
-                  <Button onClick={() => this.registerUser()}>Go</Button>
-              </ThemeProvider>  
+              <div>
+                  <input className="accountDetailInput" placeholder="Username" onChange={(e) => this.setState({usernameValue: e.target.value})}></input>
+              </div>
+              <div>
+                  <input type="password" className="accountDetailInput" placeholder="Password" onChange={(e) => this.setState({pwdValue: e.target.value})}></input>
+              </div>
+              <div>
+                  <input type="password" className="accountDetailInput" placeholder="Confirm Password" onChange={(e) => this.setState({pwdConfirmValue: e.target.value})}></input>
+              </div>
+              {/* <div>
+                <p>I am a:</p>
+                <div className="radioOption">
+                  <p>Student</p>
+                  <input type="radio"></input>
+                </div>
+              </div> */}
+              <FormControl component="fieldset">
+                <FormLabel component="legend">I am a</FormLabel>
+                <RadioGroup aria-label="gender" name="gender1" style={{display: "inline"}} value={this.state.accountType}
+                onChange={(e) => this.setState({accountType: e.target.value})}>
+                  <FormControlLabel value="student" control={<Radio />} label="Student" />
+                  <FormControlLabel value="teacher" control={<Radio />} label="Teacher" />
+                </RadioGroup>
+              </FormControl>
+              <div className="goButton">
+                  <button onClick={() => this.registerUser()}>Go!</button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
     ); 
   }
 }

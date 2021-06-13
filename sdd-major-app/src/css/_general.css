@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:ital,wght@0,300;0,700;1,300&display=swap');
+@import url('./_colors.css');
+
+:root {
+    --mainFontFamily: 'Open Sans Condensed', sans-serif; 
+}
+
+h1 {
+    font-family: 'Open Sans Condensed', sans-serif;
+    color: var(--softPurple);
+    font-weight: 700;
+    font-size: 12vh;
+}
+
+h2 {
+    font-family: 'Open Sans Condensed', sans-serif;
+    color: var(--softPurple);
+    font-weight: 700;
+    font-size: 12vh;
+}
+
+h3 {
+    font-family: 'Open Sans Condensed', sans-serif;
+}
+
+h4 {
+    font-family: 'Open Sans Condensed', sans-serif;
+    color: var(--softPurple);
+    font-weight: 700;
+    font-size: 6vh;
+}
+
+p {
+    font-family: 'Open Sans Condensed', sans-serif;
+    color: var(--softPurple);
+    font-weight: 100;
+    font-size: 3vh;
+}
+
+button {
+    font-family: 'Open Sans Condensed', sans-serif;
+    color: white;
+    font-weight: 300;
+    font-size: 3vh;
+    background-color: var(--emeraldGreen);
+    border: 0;
+    border-radius: 45px;
+    padding-left: 6vh;
+    padding-right: 6vh;
+    padding-top: 2vh;
+    padding-bottom: 2vh;
+}
+
+button:hover {
+    background-color: var(--softPurple);
+}
+
+input {
+    font-family: 'Open Sans Condensed', sans-serif;
+}
+
+Link {
+    font-family: 'Open Sans Condensed', sans-serif;
+}

@@ -1,0 +1,23 @@
+@import url('./_colors.css');
+@import url('./_general.css');
+
+.HeaderContainer {
+    width: 100%;
+    background-color: var(--softPurple);
+    color: var(--whiteSmoke);
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.link {
+    color: var(--whiteSmoke);
+    font-family: var(--mainFontFamily);
+    text-decoration: none;
+    padding: 2vh;
+}
+
+.actions {
+    display: flex;
+    flex-direction: row;
+}

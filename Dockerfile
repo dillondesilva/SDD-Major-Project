@@ -9,6 +9,7 @@ FROM python
 RUN mkdir /usr/local/app
 COPY sdd-major-server /usr/local/app
 COPY --from=0 /usr/local/app/build /usr/local/app/client
+RUN ls /usr/local/app/client
 WORKDIR /usr/local/app/
 RUN pip install -r requirements.txt
 

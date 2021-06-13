@@ -1,8 +1,11 @@
 // Importing React and necessary dependencies for project
 import React, { useEffect } from 'react';
 import { Link, useHistory } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import { AppBar, TextField, Button } from '@material-ui/core';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import HomeAppBar from '../components/HomeAppBar';
+import '../css/Login.css';
 
 // theme stores all the data regarding the styling
 // of several UI elements
@@ -59,10 +62,19 @@ export default class Login extends React.Component {
     // as well as uid in session storage
     .then(response => response.json())
     .then(data => {
-      sessionStorage.setItem("access_token", data.access_token)
-      sessionStorage.setItem("uid", data.uid)
-      // Send user to the dashboard
-      window.location = "/dashboard";
+      if (Object.keys(data).includes("error")) {
+        Swal.fire({
+          title: 'Oops!',
+          text: data["error"],
+          icon: 'error',
+          cancelButtonText: 'Retry'
+        })
+      } else {
+        sessionStorage.setItem("access_token", data.access_token)
+        sessionStorage.setItem("uid", data.uid)
+        // Send user to the dashboard
+        window.location = "/dashboard";
+      }
     })
   }
 
@@ -70,25 +82,18 @@ export default class Login extends React.Component {
   render() {
     return (
       <div className="App">
-        <ThemeProvider theme={theme}>
-            <AppBar color='primary' theme={theme}>
-              <div style={{display: "inline-block"}}>
-                <h3 style={{marginRight: "100px", display: "inline-block", textDecoration: "none"}}>
-                  <Link to="/login" style={{textDecoration: "none"}}>Sign In</Link>
-                </h3> 
-                <h3 style={{marginRight: "100px", display: "inline-block"}}>
-                  <Link to="/register">Register</Link>
-                </h3> 
-              </div>
-            </AppBar>
-        </ThemeProvider>
-        <div style={{marginTop: "10%"}}>
-          <ThemeProvider theme={theme}>
-              <TextField label="Email" color="primary" variant="outlined" onChange={(e) => this.setState({emailValue: e.target.value})}/>
-              <br></br>
-              <TextField label="Password" color="primary" variant="outlined" onChange={(e) => this.setState({pwdValue: e.target.value})}/>
-              <Button onClick={() => this.loginUser()}>Go</Button>
-          </ThemeProvider>
+        <HomeAppBar></HomeAppBar> 
+        <div className="loginView">
+          <h2 className="loginTitle">Login</h2>
+          <div>
+              <input className="accountDetailInput" placeholder="Email" onChange={(e) => this.setState({emailValue: e.target.value})}></input>
+          </div>
+          <div>
+              <input type="password" className="accountDetailInput" placeholder="Password" onChange={(e) => this.setState({pwdValue: e.target.value})}></input>
+          </div>
+          <div className="goButton">
+              <button onClick={() => this.loginUser()}>Go!</button>
+          </div>
         </div>
       </div>
     ); 

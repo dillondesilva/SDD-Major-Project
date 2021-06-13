@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:ital,wght@0,300;0,700;1,300&display=swap');
+@import url('./_colors.css');
+
+.yourWordlists {
+    font-size: 5vh;
+}
+
+.wordlistLink {
+    color: var(--softPurple);
+    text-decoration: none;
+    background-color: white;
+    border: 0.5px solid var(--softPurple);
+    margin: 1vh;
+}
+
+.wordlistLink:hover {
+    color: white;
+}

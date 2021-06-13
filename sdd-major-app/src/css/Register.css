@@ -1,0 +1,33 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:ital,wght@0,300;0,700;1,300&display=swap');
+@import url('./_colors.css');
+
+.loginView {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.loginTitle {
+    font-size: 10vh;
+}
+
+.accountDetailInput {
+    width: 30vh;
+    padding: 3vh;
+    font-size: 2.5vh;
+    border: 0.5px solid var(--softPurple);
+    border-radius: 45px;
+    color: var(--softPurple);
+    margin: 1vh;
+}
+
+input:focus {
+    border: 1px solid var(--emeraldGreen);   
+    outline: none;
+}
+
+.goButton {
+    padding-top: 1vh;
+}

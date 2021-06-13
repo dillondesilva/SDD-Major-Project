@@ -1,10 +1,12 @@
 // Importing React and necessary dependencies for project
-import React, { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import { Input, Tooltip, Button, IconButton, TextField, Dialog, Zoom, DialogTitle, Paper } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import CreateIcon from '@material-ui/icons/Create';
 import shortid from 'shortid'
+import '../css/Dashboard.css'
 
 // React class component for the Dashboard
 export default class Dashboard extends React.Component {
@@ -132,7 +134,6 @@ export default class Dashboard extends React.Component {
     // Adds a new student to a teacher account
     addStudent() {
         let uid = sessionStorage.getItem("uid");
-        console.log(this.state.addStudentCode);
         let addStudentData = {
             uid: uid,
             studentCode: this.state.addStudentCode
@@ -149,9 +150,25 @@ export default class Dashboard extends React.Component {
           // Get response json
           .then(response => response.json())
           .then(data => {
-              if ("error" in data) {
-                  console.log("bi")
-              }
+            this.setState({
+                openAddStudent: false
+            }, () => {
+                if ("error" in data) {
+                    Swal.fire({
+                        title: 'Oops!',
+                        text: data["error"],
+                        icon: 'error',
+                        cancelButtonText: 'Retry'
+                        })
+                } else {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: "Student Added",
+                        icon: 'success',
+                        cancelButtonText: 'Retry'
+                    })
+                }
+            })
         }) 
     }
 
@@ -160,17 +177,12 @@ export default class Dashboard extends React.Component {
         if (this.state.userDetails.accountType === "student") {
             return (
                 <div style={{overflow: "hidden"}}>
-                    <Tooltip title="Add Teacher" TransitionComponent={Zoom} arrow>
-                            <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}}>
-                                <AddIcon style={{color: "white"}}/>
-                            </IconButton> 
-                    </Tooltip>
                     <h1 style={{textAlign: "center"}}>Hello, {this.state.userDetails.username}</h1>
                     <br></br>
                     <div>
                         <Paper style={{width: "950px", height: "100%", margin: "0", float: "right"}} elevation={3}>
                             <div style={{margin: "3%"}}>
-                                <h1>Your Wordlists</h1>
+                                <h1 className="yourWordlists">Your Wordlists</h1>
                                 <p>Please provide your teachers with the following code {this.state.userDetails.addCode}</p>
                                 <p></p>
                                 <Paper style={{width: "800px", minHeight: "100vh", marginTop: "1%"}} elevation={5}>
@@ -179,8 +191,11 @@ export default class Dashboard extends React.Component {
                                         let wordlistData = this.state.existingWordlists[wordlistCode]
                                         return (
                                             <div>
-                                                <Link to={`/view/${wordlistCode}`}>{wordlistData.wordlist_name}</Link>
-                                                <br></br>
+                                                <Link to={`/view/${wordlistCode}`}>
+                                                    <button className="wordlistLink"to={`/view/${wordlistCode}`}>
+                                                        {wordlistData.wordlist_name}
+                                                    </button>
+                                                </Link>
                                             </div>
                                         )
                                     })
@@ -210,8 +225,8 @@ export default class Dashboard extends React.Component {
                     <div>
                         <Paper style={{width: "950px", height: "100%", margin: "0", float: "right"}} elevation={3}>
                             <div style={{margin: "3%"}}>
-                                <h1>Your Wordlists</h1>
-                                <TextField label="Search Wordlist" variant="outlined" size="small"></TextField>
+                                <h1 className="yourWordlists">Your Wordlists</h1>
+                                {/* <TextField label="Search Wordlist" variant="outlined" size="small"></TextField> */}
                                 <Paper style={{width: "800px", minHeight: "100vh", marginTop: "1%"}} elevation={5}>
                                 {
                                     Object.keys(this.state.existingWordlists).map((wordlistCode) => {
@@ -228,28 +243,33 @@ export default class Dashboard extends React.Component {
                             </div>
                         </Paper>
                     </div>
-                    <Dialog open={this.state.openCreateWordlist}>
+                    <Dialog open={this.state.openCreateWordlist} onClose={() => this.setState({openCreateWordlist: false})} >
                         <DialogTitle>New Wordlist</DialogTitle>
-                        <div style={{marginLeft: "5%"}}>
-                            <Paper elevation={0} style={{height: "150px", width: "500px"}}>
-                                <Input placeholder="Wordlist Name" onChange={(e) => this.setState({wordlistName: e.target.value})}></Input>
-                                <br></br>
-                                <TextField label="Description" style={{marginTop: "20px", width: "200px"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
-                                <br></br>
-                                <div style={{textAlign: "center"}}>
-                                    <Button color="primary" variant="filled" onClick={this.createWordlist}>Go</Button>
+                        <div>
+                            <Paper elevation={0} style={{height: "40vh"}}>
+                                <div style={{padding: "5vh"}}>
+                                    <Input placeholder="Wordlist Name" onChange={(e) => this.setState({wordlistName: e.target.value})}></Input>
+                                    <br></br>
+                                    <TextField label="Description" style={{marginTop: "20px", width: "200px"}} onChange={(e) => this.setState({wordlistDescription: e.target.value})}></TextField>
+                                    <br></br>
+                                    <div style={{textAlign: "center"}}>
+                                        <Button color="primary" variant="filled" onClick={this.createWordlist}>Go</Button>
+                                    </div>
                                 </div>
                             </Paper>
                         </div>
                     </Dialog>
-                    <Dialog open={this.state.openAddStudent}>
+                    <Dialog open={this.state.openAddStudent} onClose={() => this.setState({openAddStudent: false})} >
                         <DialogTitle>Add Student</DialogTitle>
-                        <div style={{marginLeft: "5%"}}>
-                            <Paper elevation={0} style={{height: "150px", width: "500px"}}>
-                                <Input placeholder="Student Code" onChange={(e) => this.setState({addStudentCode: e.target.value})}></Input>
-                                <br></br>
-                                <div style={{textAlign: "center"}}>
-                                    <Button color="primary" variant="filled" onClick={this.addStudent}>Add Student</Button>
+                        <div>
+                            <Paper elevation={0} style={{height: "30vh", overflow: "hidden"}}>
+                                <div style={{padding: "5vh"}}>
+                                    <Input placeholder="Student Code" onChange={(e) => this.setState({addStudentCode: e.target.value})}></Input>
+                                    <br></br>
+                                    <br></br>
+                                    <div style={{textAlign: "center"}}>
+                                        <Button color="primary" variant="filled" onClick={this.addStudent}>Add Student</Button>
+                                    </div>
                                 </div>
                             </Paper>
                         </div>

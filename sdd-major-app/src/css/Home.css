@@ -1,0 +1,19 @@
+@import url('./_general.css');
+@import url('./_colors.css');
+
+.App {
+    background-color: white;
+}
+
+.motto {
+    margin-bottom: 1vh;
+}
+
+.frontLogo {
+    width: 30vh;
+    height: 30vh;
+}
+
+.actionButtons {
+    padding-top: 3vh;
+}

@@ -1,8 +1,13 @@
 // Importing React and necessary dependencies for project
 import React, { useEffect } from 'react'
-import { Paper, Button, IconButton, TextField, Dialog, DialogTitle, Input } from '@material-ui/core'
+import { Paper, Button, 
+    IconButton, TextField, 
+    Dialog, DialogTitle, 
+    Input, Select,
+    MenuItem } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import '../css/Viewer.css'
 
 // React class component for wordlist creation
 export default class Viewer extends React.Component {
@@ -25,7 +30,8 @@ export default class Viewer extends React.Component {
             imageToAdd: "", // stores the base64 image string
             definitionTranslationToAdd: "", // a string storing the translation of a word definition
             words: [], // an array of words currently in the list
-            selectedWord: "none", // the currently selected word in the viewer
+            selectedWord: "none", // the currently selected word in the viewer,
+            targetLanguage: "en", // target language for translation
         }
     }
 
@@ -128,11 +134,16 @@ export default class Viewer extends React.Component {
     }
 
     // Gets all the current words
+    // Gets all the current words
     getWords() {
+        let uid = sessionStorage.getItem("uid");
+
         // Comprises a query to put in database for 
         // this specific wordlists's words
         let wordlistData = {
+            "uid": uid,
             "wordlistCode": this.state.wordlistCode,
+            "targetLanguage": this.state.targetLanguage
         }
 
         // Calling the get_words API endpoint
@@ -147,6 +158,41 @@ export default class Viewer extends React.Component {
             // Get the response json
             .then(response => response.json())
             .then(data => {
+                for (let word in data["words"]) {
+                    console.log(data["words"][word])
+
+                    let translateData = {
+                        textToTranslate: data["words"][word]["word"], 
+                        targetLanguage: this.state.targetLanguage
+                    }
+
+                    fetch('/api/translate/basic_translate', {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(translateData)
+                    })
+                    .then(response => response.json())
+                    .then(d => {
+                        data["words"][word]["translated_word"] = d.res.TranslatedText
+                    })
+
+                    translateData.textToTranslate = data["words"][word]["definition"]; 
+
+                    fetch('/api/translate/basic_translate', {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(translateData)
+                    })
+                    .then(response => response.json())
+                    .then(d => {
+                        data["words"][word]["translated_definition"] = d.res.TranslatedText
+                    })
+                }
+                
                 // Setting the words to displayed from state to be server's
                 // response with words
                 this.setState({
@@ -177,7 +223,7 @@ export default class Viewer extends React.Component {
             return (
                 <Paper elevation={3} style={{width: "700px", height: "500px", borderRadius: "10px", position: "absolute", display: "relative"}}>
                     <div style={{position: "absolute", top: "65%", left: "50%", width: "300px", height: "300px", marginTop: "-150px", marginLeft: "-150px"}}>
-                        <h1 style={{textAlign: "center"}}>No Word Selected</h1>
+                        <h1 style={{textAlign: "center"}} className="wordTitle">No Word Selected</h1>
                         <p style={{textAlign: "center"}}>Please select a word to view from the panel to the left</p>
                     </div>
                 </Paper>  
@@ -186,7 +232,7 @@ export default class Viewer extends React.Component {
             // Return a styled word card with the appropriate information and image
             return (
                 <Paper elevation={3} style={{width: "700px", height: "500px", borderRadius: "10px", position: "absolute"}}>
-                    <h2 style={{paddingLeft: "5%", paddingTop: "5%", textAlign: "left"}}>{this.state.selectedWord.word}</h2>
+                    <h2 style={{paddingLeft: "5%", paddingTop: "5%", textAlign: "left"}} className="wordTitle">{this.state.selectedWord.word}</h2>
                     <h3 style={{paddingLeft: "5%", textAlign: "left", color: "grey", fontWeight: "400"}}>{this.state.selectedWord.translated_word}</h3>
                     <div style={{textAlign: "center"}}>
                         <img src={this.state.selectedWord.img} style={{position: "relative", maxWidth: "300px", maxHeight: "200px"}}></img>
@@ -199,6 +245,15 @@ export default class Viewer extends React.Component {
         }
     }
 
+    // Allows for the target language to be changed and new words retrieved
+    changeTargetLanguage(e) {
+        this.setState({
+            targetLanguage: e.target.value
+        }, () => {
+            this.getWords();
+        })
+    }
+
     // Renders UI elements for the wordlist editor
     render() {
         if (this.state.accountType === "student") {
@@ -208,7 +263,6 @@ export default class Viewer extends React.Component {
             return (
                 <div>
                     <div style={{paddingTop: "1%"}}>
-                        <h1 style={{paddingLeft: "2%", display: "inline"}}>10 IST</h1>
                         <div style={{paddingRight: "1%", display: "inline"}}>
                             <Button style={{float: "right"}} variant="outlined" onClick={() => {window.location = `/mode_select/${this.state.wordlistCode}`}}>Practice Mode</Button>
                         </div>
@@ -216,28 +270,30 @@ export default class Viewer extends React.Component {
                     <div style={{marginLeft: "2%"}}>
                         <div style={{display: "inline-block", marginRight: "40%"}}>
                             <Paper elevation={3} style={{width: "400px", height: "500px", borderRadius: "10px", position: "absolute"}}>
-                                <div style={{display: "inline-block", width: "100%"}}>
-                                    <div style={{position: "absolute", paddingLeft: "5%", paddingTop: "5%",}}>
-                                        <h2 style={{textAlign: "left"}}>Your Words</h2>
-                                        <h3 style={{textAlign: "left", color: "grey", fontWeight: "400"}}>Jou woorde</h3>
+                                <div>
+                                    <div className="languageSelector">
+                                        <div style={{position: "absolute", paddingLeft: "5%", paddingTop: "5%",}}>
+                                            <h2 style={{textAlign: "left"}} className="yourWords">Your Words</h2>
+                                            <Select value={this.state.targetLanguage} onChange={(e) => { this.changeTargetLanguage(e) }}>
+                                                <MenuItem value="en">English</MenuItem>
+                                                <MenuItem value="fr">French</MenuItem>
+                                            </Select>
+                                        </div>
+                                        <div style={{paddingRight: "5%", paddingTop: "12%"}}>
+                                        </div>
                                     </div>
-                                    <div style={{paddingRight: "5%", paddingTop: "12%"}}>
-                                        <IconButton aria-label="delete" style={{backgroundColor: "#FF7979", float: "right"}} onClick={() => this.setState({openWord: true})}>
-                                            <AddIcon style={{color: "white"}}/>
-                                        </IconButton> 
+                                    <div style={{textAlign: "center", paddingTop: "10%"}}>
+                                        {
+                                            this.state.words.map((word, index) => {
+                                                // wordIndex refers to the index of the word within this.state.words
+                                                // for selection
+                                                let wordIndex = index
+                                                return (
+                                                    <Button style={{width: "100%", borderRadius: "0"}} onClick={() => this.changeSelectedWord(wordIndex)}>{word.word}</Button> 
+                                                )
+                                            })
+                                        }
                                     </div>
-                                </div>
-                                <div style={{textAlign: "center", paddingTop: "10%"}}>
-                                    {
-                                        this.state.words.map((word, index) => {
-                                            // wordIndex refers to the index of the word within this.state.words
-                                            // for selection
-                                            let wordIndex = index
-                                            return (
-                                                <Button style={{width: "100%", borderRadius: "0"}} onClick={() => this.changeSelectedWord(wordIndex)}>{word.word}</Button> 
-                                            )
-                                        })
-                                    }
                                 </div>
                             </Paper>
                         </div>
